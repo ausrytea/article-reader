@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Article Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #0C0B12;
+    --surface:    #14121E;
+    --surface-2:  #1C1929;
+    --surface-3:  #242133;
+    --border:     rgba(255,255,255,0.07);
+    --border-mid: rgba(255,255,255,0.12);
+    --primary:    #8B7CF6;
+    --primary-dim:#5C4FBF;
+    --on-primary: #ffffff;
+    --text:       #EAE8F2;
+    --text-muted: #8A8799;
+    --text-dim:   #4E4B5E;
+    --success:    #4FD98A;
+    --error:      #F27878;
+    --radius-xl:  24px;
+    --radius-l:   16px;
+    --radius-m:   12px;
+    --radius-s:   8px;
+    --radius-pill:100px;
+  }
+
+  [data-theme="light"] {
+    --bg:         #F4F2FA;
+    --surface:    #FFFFFF;
+    --surface-2:  #EDE9F6;
+    --surface-3:  #E4E0F0;
+    --border:     rgba(0,0,0,0.07);
+    --border-mid: rgba(0,0,0,0.12);
+    --primary:    #6B5CE7;
+    --primary-dim:#8B7CF6;
+    --on-primary: #ffffff;
+    --text:       #1A1828;
+    --text-muted: #6B6880;
+    --text-dim:   #B0ADBD;
+    --success:    #1A8A52;
+    --error:      #C0392B;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    padding: 32px 28px 28px;
+    box-shadow: 0 0 0 1px var(--border), 0 8px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .app-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dim));
+    border-radius: var(--radius-m);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .header p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-mid);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .icon-btn:hover { background: var(--surface-3); color: var(--text); }
+
+  /* ── Status chip ── */
+  .status-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    transition: all 0.2s;
+    width: fit-content;
+  }
+  .status-chip.reading { background: rgba(79,217,138,0.1); border-color: rgba(79,217,138,0.25); color: var(--success); }
+  .status-chip.error   { background: rgba(242,120,120,0.1); border-color: rgba(242,120,120,0.25); color: var(--error); }
+  .status-chip.done    { background: rgba(139,124,246,0.12); border-color: rgba(139,124,246,0.25); color: var(--primary); }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--text-dim);
+  }
+  .dot.green { background: var(--success); animation: pulse 1.4s ease-in-out infinite; }
+  .dot.red   { background: var(--error); }
+  .dot.blue  { background: var(--primary); }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.85)} }
+
+  /* ── Field label ── */
+  .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* ── URL input ── */
+  .url-field {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .url-field input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-m);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 13px 44px 13px 16px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .url-field input::placeholder { color: var(--text-dim); }
+  .url-field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139,124,246,0.15);
+  }
+
+  .url-clear {
+    position: absolute;
+    right: 10px; top: 50%;
+    transform: translateY(-50%);
+    width: 28px; height: 28px;
+    border: none; background: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    display: none;
+    align-items: center; justify-content: center;
+    border-radius: var(--radius-s);
+    font-size: 16px;
+  }
+  .url-clear:hover { background: var(--surface-3); color: var(--text); }
+  .url-field input:not(:placeholder-shown) ~ .url-clear { display: flex; }
+
+  /* ── Pill selectors ── */
+  .pill-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .pill {
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-mid);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .pill:hover { background: var(--surface-2); color: var(--text); }
+  .pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
+  }
+
+  /* ── Speed ── */
+  .speed-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .speed-label-left {
+    font-size: 12px;
+    color: var(--text-dim);
+    min-width: 24px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    flex: 1;
+    height: 4px;
+    background: var(--surface-3);
+    border-radius: 2px;
+    cursor: pointer;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139,124,246,0.2);
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+  }
+  input[type="range"]:hover::-webkit-slider-thumb { box-shadow: 0 0 0 5px rgba(139,124,246,0.25); }
+
+  .speed-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    min-width: 34px;
+    text-align: right;
+  }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+
+  .btn-play {
+    flex: 1;
+    height: 48px;
+    border-radius: var(--radius-m);
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    transition: all 0.15s;
+    letter-spacing: -0.2px;
+  }
+  .btn-play:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(139,124,246,0.4); }
+  .btn-play:active { transform: translateY(0); box-shadow: none; }
+  .btn-play:disabled { background: var(--surface-3); color: var(--text-dim); cursor: not-allowed; filter: none; transform: none; box-shadow: none; }
+
+  .btn-icon {
+    width: 48px; height: 48px;
+    border-radius: var(--radius-m);
+    border: 1px solid var(--border-mid);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-icon:hover { background: var(--surface-3); color: var(--text); }
+  .btn-icon:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-icon.paused { color: var(--success); border-color: rgba(79,217,138,0.3); background: rgba(79,217,138,0.08); }
+  .btn-icon.stop-btn { color: var(--error); }
+  .btn-icon.stop-btn:hover { background: rgba(242,120,120,0.1); border-color: rgba(242,120,120,0.3); }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 20px;
+  }
+
+  /* ── Notes ── */
+  .notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .notes-actions { display: flex; gap: 4px; }
+
+  .notes-icon-btn {
+    width: 28px; height: 28px;
+    border-radius: var(--radius-s);
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: all 0.15s;
+  }
+  .notes-icon-btn:hover { background: var(--surface-2); color: var(--text-muted); }
+
+  .notes-textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 12px 14px;
+    outline: none;
+    resize: vertical;
+    min-height: 84px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .notes-textarea::placeholder { color: var(--text-dim); }
+  .notes-textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139,124,246,0.12);
+  }
+
+  .notes-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  .notes-saved {
+    font-size: 11px;
+    color: var(--success);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .notes-saved.show { opacity: 1; }
+
+  .notes-chars { font-size: 11px; color: var(--text-dim); }
+
+  /* ── Subtitle toggle & field ── */
+  .subtitle-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    margin-bottom: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .subtitle-toggle input[type="checkbox"] {
+    accent-color: var(--primary);
+    width: 15px; height: 15px;
+    cursor: pointer;
+  }
+
+  .subtitle-field {
+    display: none;
+    margin-top: 14px;
+    margin-bottom: 24px;
+    padding: 16px 18px;
+    border-radius: var(--radius-m);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    height: calc(1.6em * 4 + 32px);
+    overflow: hidden;
+    position: relative;
+  }
+  .subtitle-field.active { border-color: rgba(139,124,246,0.3); }
+
+  .subtitle-lines {
+    position: relative;
+    height: 100%;
+  }
+
+  .subtitle-line {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    line-height: 1.6;
+    white-space: normal;
+    word-break: break-word;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .subtitle-line.current { opacity: 1; color: var(--text); }
+  .subtitle-line.placeholder { opacity: 1; color: var(--text-dim); font-style: italic; align-items: flex-start; }
+
+  /* ── Two-column rows ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .two-col .section { margin-bottom: 0; }
+
+  /* ── Material Symbols ── */
+  .ms { font-family: 'Material Symbols Rounded'; font-variation-settings: 'FILL' 1; }
+
+  /* ── Mobile ── */
+  @media (max-width: 600px) {
+    body { padding: 0; align-items: flex-start; }
+    .card { border-radius: 0; box-shadow: none; border: none; min-height: 100dvh; padding: 24px 16px 32px; }
+    .url-field input { font-size: 16px; }
+    .notes-textarea { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="app-icon"><span class="ms">headphones</span></div>
+      <div>
+        <h1>Article Reader</h1>
+        <p>English &amp; Lithuanian · Neural voices</p>
+      </div>
+    </div>
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
+      <span class="ms" id="themeIcon">light_mode</span>
+    </button>
+  </div>
+
+  <!-- Status -->
+  <div class="status-chip" id="status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Ready</span>
+  </div>
+
+  <!-- URL -->
+  <div class="url-field">
+    <input type="url" id="urlInput" placeholder="Paste article URL…" />
+    <button class="url-clear" onclick="clearUrl()" title="Clear">
+      <span class="ms" style="font-size:16px">close</span>
+    </button>
+  </div>
+  <label class="subtitle-toggle">
+    <input type="checkbox" id="showSubtitles" onchange="toggleSubtitleField(this.checked)">
+    Show subtitles
+  </label>
+  <div class="subtitle-field" id="subtitleField">
+    <div class="subtitle-lines" id="subtitleLines">
+      <div class="subtitle-line placeholder">Subtitles will appear here while reading…</div>
+    </div>
+  </div>
+
+  <!-- Language & Voice -->
+  <div class="two-col">
+    <div class="section">
+      <span class="label">Language</span>
+      <div class="pill-row" style="margin-bottom:0; flex-wrap:wrap;">
+        <button class="pill" data-lang="auto" onclick="setLang('auto')">Auto</button>
+        <button class="pill active" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="pill" data-lang="lt" onclick="setLang('lt')">LT</button>
+      </div>
+    </div>
+    <div class="section">
+      <span class="label">Voice</span>
+      <div class="pill-row" style="margin-bottom:0; flex-wrap:wrap;">
+        <button class="pill" data-gender="auto" onclick="setGender('auto')">Auto</button>
+        <button class="pill active" data-gender="f" onclick="setGender('f')">♀</button>
+        <button class="pill" data-gender="m" onclick="setGender('m')">♂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Speed -->
+  <div class="speed-row">
+    <span class="label" style="margin:0; min-width:40px">Speed</span>
+    <input type="range" id="speedRange" min="0.5" max="3" step="0.25" value="1"
+      oninput="document.getElementById('speedVal').textContent = parseFloat(this.value).toFixed(2).replace(/\.?0+$/,'') + '×'">
+    <span class="speed-val" id="speedVal">1×</span>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn-play" id="readBtn" onclick="startReading()">
+      <span class="ms">play_arrow</span> Read
+    </button>
+    <button class="btn-icon" id="pauseBtn" onclick="togglePause()" disabled title="Pause">
+      <span class="ms" id="pauseIcon">pause</span>
+    </button>
+    <button class="btn-icon stop-btn" id="stopBtn" onclick="stopReading()" disabled title="Stop">
+      <span class="ms">stop</span>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Notes -->
+  <div>
+    <div class="notes-header">
+      <span class="label" style="margin:0">Notes</span>
+      <div class="notes-actions">
+        <button class="notes-icon-btn" onclick="copyNotes()" title="Copy">
+          <span class="ms">content_copy</span>
+        </button>
+        <button class="notes-icon-btn" onclick="clearNotes()" title="Clear">
+          <span class="ms">delete</span>
+        </button>
+      </div>
+    </div>
+    <textarea class="notes-textarea" id="notesArea" placeholder="Your notes…" oninput="onNotesInput()"></textarea>
+    <div class="notes-footer">
+      <span class="notes-saved" id="notesSaved">Saved</span>
+      <span class="notes-chars" id="notesChars">0 chars</span>
+    </div>
+  </div>
+
+</div>
+
+<textarea id="textInput" style="display:none"></textarea>
+
+<script>
+  const IS_SERVER = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+  // ── Theme ──────────────────────────────────────────────────────────────────
+  let theme = localStorage.getItem('theme') || 'dark';
+  applyTheme(theme);
+
+  function applyTheme(t) {
+    theme = t;
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('themeIcon').textContent = t === 'dark' ? 'light_mode' : 'dark_mode';
+    localStorage.setItem('theme', t);
+  }
+
+  function toggleTheme() { applyTheme(theme === 'dark' ? 'light' : 'dark'); }
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let selectedLang = 'en';
+  let selectedGender = 'f';
+  let isSpeaking = false;
+  let isPaused = false;
+  let pollTimer = null;
+
+  // ── UI helpers ─────────────────────────────────────────────────────────────
+  function setLang(lang) {
+    selectedLang = lang;
+    document.querySelectorAll('.pill[data-lang]').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+  }
+
+  function setGender(g) {
+    selectedGender = g;
+    document.querySelectorAll('.pill[data-gender]').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-gender="${g}"]`).classList.add('active');
+  }
+
+  function clearUrl() {
+    document.getElementById('urlInput').value = '';
+    document.getElementById('urlInput').focus();
+  }
+
+  function toggleSubtitleField(on) {
+    document.getElementById('subtitleField').style.display = on ? 'block' : 'none';
+    if (!on) resetSubtitle();
+  }
+
+  let subtitleWordTimer = null;
+  let lastSubtitleText = '';
+
+  function resetSubtitle() {
+    lastSubtitleText = '';
+    if (subtitleWordTimer) { clearInterval(subtitleWordTimer); subtitleWordTimer = null; }
+    const field = document.getElementById('subtitleField');
+    const container = document.getElementById('subtitleLines');
+    field.classList.remove('active');
+    container.innerHTML = '<div class="subtitle-line placeholder">Subtitles will appear here while reading…</div>';
+  }
+
+  function updateSubtitle(text) {
+    if (!document.getElementById('showSubtitles').checked) return;
+    if (lastSubtitleText === text) return;
+    lastSubtitleText = text;
+
+    if (subtitleWordTimer) { clearInterval(subtitleWordTimer); subtitleWordTimer = null; }
+
+    const field = document.getElementById('subtitleField');
+    const container = document.getElementById('subtitleLines');
+    field.classList.add('active');
+
+    // Fade out old, swap, fade in new
+    const old = container.querySelector('.subtitle-line.current');
+    if (old) {
+      old.style.transition = 'opacity 0.2s ease';
+      old.style.opacity = '0';
+    }
+
+    const el = document.createElement('div');
+    el.className = 'subtitle-line current';
+    el.style.opacity = '0';
+    container.innerHTML = '';
+    container.appendChild(el);
+
+    requestAnimationFrame(() => {
+      el.style.transition = 'opacity 0.3s ease';
+      el.style.opacity = '1';
+    });
+
+    // Word-by-word reveal
+    const speed = parseFloat(document.getElementById('speedRange').value);
+    const msPerWord = 60000 / (155 * speed);
+    const words = text.trim().split(/\s+/);
+    let revealed = 0;
+
+    subtitleWordTimer = setInterval(() => {
+      revealed++;
+      el.textContent = words.slice(0, revealed).join(' ');
+      if (revealed >= words.length) { clearInterval(subtitleWordTimer); subtitleWordTimer = null; }
+    }, msPerWord);
+  }
+
+  function guessGenderFromAuthor() {
+    const sels = ['[class*="author"]','[class*="byline"]','[rel="author"]','[itemprop="author"]'];
+    let name = '';
+    for (const s of sels) { const el = document.querySelector(s); if (el) { name = el.textContent.trim(); break; } }
+    if (!name) return 'f';
+    const first = name.split(/\s+/)[0].toLowerCase();
+    if (/(?:as|is|us|ys)$/i.test(first)) return 'm';
+    return 'f';
+  }
+
+  function setStatus(msg, type = '') {
+    const chip = document.getElementById('status');
+    const dot = document.getElementById('statusDot');
+    chip.className = 'status-chip ' + type;
+    const dotClass = type === 'reading' ? 'green' : type === 'error' ? 'red' : type === 'done' ? 'blue' : '';
+    dot.className = 'dot ' + dotClass;
+    document.getElementById('statusText').textContent = msg;
+  }
+
+  function resetButtons() {
+    isSpeaking = false; isPaused = false;
+    document.getElementById('readBtn').disabled = false;
+    const pb = document.getElementById('pauseBtn');
+    pb.disabled = true;
+    pb.classList.remove('paused');
+    document.getElementById('pauseIcon').textContent = 'pause';
+    document.getElementById('stopBtn').disabled = true;
+  }
+
+  async function togglePause() {
+    const btn = document.getElementById('pauseBtn');
+    if (!isPaused) {
+      await fetch('/pause', { method: 'POST' });
+      isPaused = true;
+      btn.classList.add('paused');
+      document.getElementById('pauseIcon').textContent = 'play_arrow';
+    } else {
+      await fetch('/resume', { method: 'POST' });
+      isPaused = false;
+      btn.classList.remove('paused');
+      document.getElementById('pauseIcon').textContent = 'pause';
+    }
+  }
+
+  // ── Server mode ────────────────────────────────────────────────────────────
+  function pollStatus() {
+    pollTimer = setInterval(async () => {
+      try {
+        const data = await fetch('/status').then(r => r.json());
+        if (data.current) updateSubtitle(data.current);
+        if (data.state === 'idle') {
+          clearInterval(pollTimer);
+          if (isSpeaking) { setStatus('Done reading.', 'done'); resetButtons(); resetSubtitle(); }
+        } else if (data.state === 'error') {
+          clearInterval(pollTimer);
+          setStatus(data.message, 'error');
+          resetButtons();
+        } else {
+          setStatus(data.message, 'reading');
+        }
+      } catch(e) {}
+    }, 800);
+  }
+
+  async function startReadingServer() {
+    const url = document.getElementById('urlInput').value.trim();
+    const text = document.getElementById('textInput').value.trim();
+    const rate = parseFloat(document.getElementById('speedRange').value);
+    if (!url && !text) { setStatus('Paste a URL first', 'error'); return; }
+
+    try { await fetch('/stop', { method: 'POST' }); } catch(e) {}
+    clearInterval(pollTimer);
+
+    document.getElementById('readBtn').disabled = true;
+    document.getElementById('pauseBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = false;
+    isSpeaking = true;
+    setStatus(url ? 'Fetching article…' : 'Starting…', 'reading');
+
+    const gender = selectedGender === 'auto' ? guessGenderFromAuthor() : selectedGender;
+
+    try {
+      const res = await fetch('/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: url || text, lang: selectedLang, is_url: !!url, rate, gender })
+      });
+      if (!res.ok) throw new Error('Server error');
+      const data = await res.json();
+      if (data.status === 'queued') pollStatus();
+    } catch(e) {
+      setStatus(e.message, 'error');
+      resetButtons();
+    }
+  }
+
+  async function stopReadingServer() {
+    clearInterval(pollTimer);
+    isPaused = false;
+    try { await fetch('/stop', { method: 'POST' }); } catch(e) {}
+    resetButtons();
+    setStatus('Ready');
+    resetSubtitle();
+  }
+
+  // ── Browser mode ───────────────────────────────────────────────────────────
+  let utterance = null;
+
+  function detectLang(text) {
+    const ltChars = /[ąčęėįšųūž]/i;
+    const ltWords = /\b(ir|bei|kad|tai|su|už|yra|buvo|bus|dar|jau|bet|arba|kaip|kas|ką|jam|jos|jo|jis|ji|mes|jie|jų|mūsų)\b/i;
+    return (ltChars.test(text) || ltWords.test(text)) ? 'lt-LT' : 'en-US';
+  }
+
+  function getLangCode(text) {
+    if (selectedLang === 'lt') return 'lt-LT';
+    if (selectedLang === 'en') return 'en-US';
+    return detectLang(text);
+  }
+
+  function getBestVoice(langCode) {
+    const voices = window.speechSynthesis.getVoices();
+    return voices.find(v => v.lang === langCode) || voices.find(v => v.lang.startsWith(langCode.split('-')[0])) || null;
+  }
+
+  function startReadingBrowser() {
+    window.speechSynthesis.cancel();
+    const text = document.getElementById('textInput').value.trim();
+    const url = document.getElementById('urlInput').value.trim();
+    const speed = parseFloat(document.getElementById('speedRange').value);
+    if (url) { setStatus('URL reading requires: python reader.py --serve', 'error'); return; }
+    if (!text) { setStatus('Paste text to read', 'error'); return; }
+    const langCode = getLangCode(text);
+    if (langCode === 'lt-LT') { setStatus('Lithuanian requires: python reader.py --serve', 'error'); return; }
+    const voice = getBestVoice(langCode);
+    setStatus('Reading…', 'reading');
+    document.getElementById('readBtn').disabled = true;
+    document.getElementById('stopBtn').disabled = false;
+    isSpeaking = true;
+    const sentences = text.match(/[^.!?\n]+[.!?\n]*/g) || [text];
+    let idx = 0;
+    function speakNext() {
+      if (!isSpeaking || idx >= sentences.length) { if (isSpeaking) { setStatus('Done.', 'done'); resetButtons(); } return; }
+      const chunk = sentences.slice(idx, idx + 3).join(' '); idx += 3;
+      utterance = new SpeechSynthesisUtterance(chunk);
+      utterance.lang = langCode; utterance.rate = speed;
+      if (voice) utterance.voice = voice;
+      utterance.onend = speakNext;
+      utterance.onerror = e => { if (e.error !== 'interrupted') { setStatus('Speech error: ' + e.error, 'error'); resetButtons(); } };
+      window.speechSynthesis.speak(utterance);
+    }
+    speakNext();
+  }
+
+  function stopReadingBrowser() {
+    isSpeaking = false;
+    window.speechSynthesis.cancel();
+    utterance = null;
+    resetButtons();
+    setStatus('Ready');
+  }
+
+  // ── Entry points ───────────────────────────────────────────────────────────
+  function startReading() { if (IS_SERVER) startReadingServer(); else startReadingBrowser(); }
+  function stopReading()  { if (IS_SERVER) stopReadingServer();  else stopReadingBrowser(); }
+
+  if (!IS_SERVER) {
+    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    window.speechSynthesis.getVoices();
+  }
+
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startReading();
+  });
+
+  // ── Notes ──────────────────────────────────────────────────────────────────
+  let notesKey = 'notes:default';
+  let saveTimer = null;
+
+  function notesStorageKey() {
+    const url = document.getElementById('urlInput').value.trim();
+    return url ? 'notes:' + url : 'notes:default';
+  }
+
+  document.getElementById('urlInput').addEventListener('change', () => {
+    notesKey = notesStorageKey();
+    const saved = localStorage.getItem(notesKey) || '';
+    document.getElementById('notesArea').value = saved;
+    updateNotesChars(saved.length);
+  });
+
+  function updateNotesChars(n) {
+    document.getElementById('notesChars').textContent = n + ' char' + (n !== 1 ? 's' : '');
+  }
+
+  function onNotesInput() {
+    const text = document.getElementById('notesArea').value;
+    updateNotesChars(text.length);
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      notesKey = notesStorageKey();
+      localStorage.setItem(notesKey, text);
+      const saved = document.getElementById('notesSaved');
+      saved.classList.add('show');
+      setTimeout(() => saved.classList.remove('show'), 1800);
+    }, 600);
+  }
+
+  function copyNotes() {
+    const text = document.getElementById('notesArea').value;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const saved = document.getElementById('notesSaved');
+      saved.textContent = 'Copied!';
+      saved.classList.add('show');
+      setTimeout(() => { saved.classList.remove('show'); saved.textContent = 'Saved'; }, 1800);
+    });
+  }
+
+  function clearNotes() {
+    if (!document.getElementById('notesArea').value) return;
+    document.getElementById('notesArea').value = '';
+    updateNotesChars(0);
+    notesKey = notesStorageKey();
+    localStorage.removeItem(notesKey);
+  }
+
+  const saved = localStorage.getItem(notesKey) || '';
+  document.getElementById('notesArea').value = saved;
+  updateNotesChars(saved.length);
+</script>
+</body>
+</html>
