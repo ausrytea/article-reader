@@ -277,26 +277,29 @@
 
   /* ── Controls ── */
   .controls {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    align-items: stretch;
     margin-bottom: 24px;
   }
 
-  .btn-play {
-    flex: 1;
+  .btn-play, .btn-icon {
+    width: 100%;
     height: 48px;
     border-radius: var(--radius-m);
-    border: none;
-    background: var(--primary);
-    color: white;
     font-family: inherit;
-    font-size: 15px;
-    font-weight: 600;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     gap: 8px;
     transition: all 0.15s;
+  }
+
+  .btn-play {
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
     letter-spacing: -0.2px;
   }
   .btn-play:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(139,124,246,0.4); }
@@ -304,16 +307,10 @@
   .btn-play:disabled { background: var(--surface-3); color: var(--text-dim); cursor: not-allowed; filter: none; transform: none; box-shadow: none; }
 
   .btn-icon {
-    width: 48px; height: 48px;
-    border-radius: var(--radius-m);
     border: 1px solid var(--border-mid);
     background: var(--surface-2);
     color: var(--text-muted);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
     font-size: 20px;
-    transition: all 0.15s;
-    flex-shrink: 0;
   }
   .btn-icon:hover { background: var(--surface-3); color: var(--text); }
   .btn-icon:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -328,66 +325,6 @@
     margin-bottom: 20px;
   }
 
-  /* ── Notes ── */
-  .notes-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .notes-actions { display: flex; gap: 4px; }
-
-  .notes-icon-btn {
-    width: 28px; height: 28px;
-    border-radius: var(--radius-s);
-    border: none;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    transition: all 0.15s;
-  }
-  .notes-icon-btn:hover { background: var(--surface-2); color: var(--text-muted); }
-
-  .notes-textarea {
-    width: 100%;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-m);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 13px;
-    line-height: 1.6;
-    padding: 12px 14px;
-    outline: none;
-    resize: vertical;
-    min-height: 84px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .notes-textarea::placeholder { color: var(--text-dim); }
-  .notes-textarea:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(139,124,246,0.12);
-  }
-
-  .notes-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 6px;
-  }
-
-  .notes-saved {
-    font-size: 11px;
-    color: var(--success);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .notes-saved.show { opacity: 1; }
-
-  .notes-chars { font-size: 11px; color: var(--text-dim); }
 
   /* ── PDF upload ── */
   .pdf-row {
@@ -503,12 +440,22 @@
   /* ── Material Symbols ── */
   .ms { font-family: 'Material Symbols Rounded'; font-variation-settings: 'FILL' 1; }
 
-  /* ── Mobile ── */
+  /* ── Responsive ── */
   @media (max-width: 600px) {
     body { padding: 0; align-items: flex-start; }
-    .card { border-radius: 0; box-shadow: none; border: none; min-height: 100dvh; padding: 24px 16px 32px; }
+    .card { border-radius: 0; box-shadow: none; border: none; min-height: 100dvh; padding: 20px 16px 40px; max-width: 100%; }
     .url-field input { font-size: 16px; }
-    .notes-textarea { font-size: 16px; }
+    .two-col { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pill { padding: 6px 12px; font-size: 12px; }
+    .btn-play, .btn-icon { height: 52px; }
+    .header h1 { font-size: 16px; }
+    .pdf-row { flex-wrap: wrap; }
+  }
+
+  @media (max-width: 380px) {
+    .two-col { grid-template-columns: 1fr; }
+    .controls { grid-template-columns: 1fr 1fr 1fr; }
+    .btn-play, .btn-icon { height: 48px; font-size: 13px; }
   }
 </style>
 </head>
@@ -604,27 +551,6 @@
     </button>
   </div>
 
-  <div class="divider"></div>
-
-  <!-- Notes -->
-  <div>
-    <div class="notes-header">
-      <span class="label" style="margin:0">Notes</span>
-      <div class="notes-actions">
-        <button class="notes-icon-btn" onclick="copyNotes()" title="Copy">
-          <span class="ms">content_copy</span>
-        </button>
-        <button class="notes-icon-btn" onclick="clearNotes()" title="Clear">
-          <span class="ms">delete</span>
-        </button>
-      </div>
-    </div>
-    <textarea class="notes-textarea" id="notesArea" placeholder="Your notes…" oninput="onNotesInput()"></textarea>
-    <div class="notes-footer">
-      <span class="notes-saved" id="notesSaved">Saved</span>
-      <span class="notes-chars" id="notesChars">0 chars</span>
-    </div>
-  </div>
 
 </div>
 
@@ -686,15 +612,27 @@
     setStatus('Fetching PDF…', 'reading');
     clearPdf();
 
-    const sources = [
-      url,
-      'https://corsproxy.io/?' + encodeURIComponent(url),
-      'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-    ];
-
     let pdf = null;
-    for (const src of sources) {
-      try { pdf = await pdfjsLib.getDocument(src).promise; break; } catch(e) {}
+
+    // Try direct URL first (works if server allows CORS)
+    try { pdf = await pdfjsLib.getDocument(url).promise; } catch(e) {}
+
+    // Try proxies — fetch as raw bytes so PDF.js gets clean binary data
+    if (!pdf) {
+      const proxies = [
+        'https://corsproxy.io/?' + encodeURIComponent(url),
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        'https://thingproxy.freeboard.io/fetch/' + url,
+      ];
+      for (const proxy of proxies) {
+        try {
+          const res = await fetch(proxy);
+          if (!res.ok) continue;
+          const data = await res.arrayBuffer();
+          pdf = await pdfjsLib.getDocument({ data }).promise;
+          break;
+        } catch(e) {}
+      }
     }
 
     if (!pdf) {
@@ -1048,61 +986,6 @@
     if (isPdfUrl(url)) loadPdfFromUrl(url);
   });
 
-  // ── Notes ──────────────────────────────────────────────────────────────────
-  let notesKey = 'notes:default';
-  let saveTimer = null;
-
-  function notesStorageKey() {
-    const url = document.getElementById('urlInput').value.trim();
-    return url ? 'notes:' + url : 'notes:default';
-  }
-
-  document.getElementById('urlInput').addEventListener('change', () => {
-    notesKey = notesStorageKey();
-    const saved = localStorage.getItem(notesKey) || '';
-    document.getElementById('notesArea').value = saved;
-    updateNotesChars(saved.length);
-  });
-
-  function updateNotesChars(n) {
-    document.getElementById('notesChars').textContent = n + ' char' + (n !== 1 ? 's' : '');
-  }
-
-  function onNotesInput() {
-    const text = document.getElementById('notesArea').value;
-    updateNotesChars(text.length);
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      notesKey = notesStorageKey();
-      localStorage.setItem(notesKey, text);
-      const saved = document.getElementById('notesSaved');
-      saved.classList.add('show');
-      setTimeout(() => saved.classList.remove('show'), 1800);
-    }, 600);
-  }
-
-  function copyNotes() {
-    const text = document.getElementById('notesArea').value;
-    if (!text) return;
-    navigator.clipboard.writeText(text).then(() => {
-      const saved = document.getElementById('notesSaved');
-      saved.textContent = 'Copied!';
-      saved.classList.add('show');
-      setTimeout(() => { saved.classList.remove('show'); saved.textContent = 'Saved'; }, 1800);
-    });
-  }
-
-  function clearNotes() {
-    if (!document.getElementById('notesArea').value) return;
-    document.getElementById('notesArea').value = '';
-    updateNotesChars(0);
-    notesKey = notesStorageKey();
-    localStorage.removeItem(notesKey);
-  }
-
-  const saved = localStorage.getItem(notesKey) || '';
-  document.getElementById('notesArea').value = saved;
-  updateNotesChars(saved.length);
 </script>
 </body>
 </html>
